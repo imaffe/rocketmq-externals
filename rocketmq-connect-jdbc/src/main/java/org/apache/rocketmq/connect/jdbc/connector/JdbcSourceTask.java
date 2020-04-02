@@ -32,7 +32,6 @@ import org.apache.rocketmq.connect.jdbc.common.DBUtils;
 import org.apache.rocketmq.connect.jdbc.config.ConfigUtil;
 import org.apache.rocketmq.connect.jdbc.schema.Table;
 import org.apache.rocketmq.connect.jdbc.source.Querier;
-import org.apache.rocketmq.connect.jdbc.source.TimestampIncrementingQuerier;
 import org.apache.rocketmq.connect.jdbc.schema.column.*;
 
 import org.slf4j.Logger;
@@ -143,15 +142,8 @@ public class JdbcSourceTask extends SourceTask {
                 log.error("start querier failed in bulk mode{}", e);
             }
         } else {
-            TimestampIncrementingQuerier querier = new TimestampIncrementingQuerier();
-            try {
-                querier.setConfig(config);
-                querier.start();
-                tableQueue.add(querier);
-            } catch (Exception e) {
-                log.error("fail to start querier{}", e);
-            }
 
+            log.error("cannot use timestamp querier");
         }
 
     }
