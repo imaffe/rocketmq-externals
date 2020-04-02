@@ -78,7 +78,7 @@ public class RebalanceService extends ServiceThread {
          */
         @Override
         public void onWorkerChange() {
-            log.info("Wake up rebalance service");
+            log.info("Wake up rebalance service on worker change");
             RebalanceService.this.wakeup();
         }
     }
@@ -90,6 +90,7 @@ public class RebalanceService extends ServiceThread {
          */
         @Override
         public void onConfigUpdate() {
+            log.info("Wake up rebalance service on config update");
             RebalanceService.this.wakeup();
         }
     }
