@@ -192,7 +192,7 @@ public class DBUtils {
         Map<String, String> map = new HashMap<>();
         map.put("driverClassName", "com.mysql.cj.jdbc.Driver");
         map.put("url",
-                "jdbc:mysql://" + config.getDbUrl() + ":" + config.getDbPort()  + "?useSSL=true&verifyServerCertificate=false&serverTimezone=GMT%2B8&characterEncoding=utf8");
+                "jdbc:mysql://" + config.getDbUrl() + ":" + config.getDbPort()  + "?useSSL=false&verifyServerCertificate=false&serverTimezone=GMT%2B8&characterEncoding=utf8");
         map.put("username", config.getDbUsername());
         map.put("password", config.getDbPassword());
         map.put("initialSize", "1");
@@ -200,7 +200,8 @@ public class DBUtils {
         map.put("maxWait", "60000");
         map.put("timeBetweenEvictionRunsMillis", "60000");
         map.put("minEvictableIdleTimeMillis", "300000");
-        map.put("validationQuery", "SELECT 1 FROM DUAL");
+        // TODO this validation query might not be correct
+        map.put("validationQuery", "SELECT 1");
         map.put("testWhileIdle", "true");
         log.info("{} config read successful", map);
         DataSource dataSource = null;
