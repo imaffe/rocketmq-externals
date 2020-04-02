@@ -205,6 +205,7 @@ public class DBUtils {
         log.info("{} config read successful", map);
         DataSource dataSource = null;
         // TODO apparently here needs some more error handling
+        log.info("try creating datasource");
         try {
             dataSource = DruidDataSourceFactory.createDataSource(map);
         } catch (Exception e) {
