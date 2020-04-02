@@ -99,7 +99,12 @@ public class JdbcSourceConnector extends SourceConnector {
                 this.dbConnectorConfig.getTaskParallelism(),
                 this.dbConnectorConfig.getMode()
         );
-        return this.dbConnectorConfig.getTaskDivideStrategy().divide(this.dbConnectorConfig, tdc);
+        log.info("taskDivideStrategy:" + this.dbConnectorConfig.getTaskDivideStrategy().toString());
+        List<KeyValue> taskConfigs = this.dbConnectorConfig.getTaskDivideStrategy().divide(this.dbConnectorConfig, tdc);
+        if(taskConfigs == null) {
+            log.info("taskConfigs is null");
+        }
+        return taskConfigs;
     }
 
 }
