@@ -20,7 +20,8 @@ public class SourceDbConnectorConfig extends DbConnectorConfig{
     public void validate(KeyValue config) {
         this.taskParallelism = config.getInt(Config.CONN_TASK_PARALLELISM, 0);
 
-        int strategy = config.getInt(Config.CONN_TASK_DIVIDE_STRATEGY, DivideStrategyEnum.BY_QUEUE.ordinal());
+        // TODO I found a bug here
+        int strategy = config.getInt(Config.CONN_TASK_DIVIDE_STRATEGY, DivideStrategyEnum.BY_TOPIC.ordinal());
         if (strategy == DivideStrategyEnum.BY_QUEUE.ordinal()) {
             this.taskDivideStrategy = new DivideTaskByQueue();
         } else {

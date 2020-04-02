@@ -28,6 +28,8 @@ import java.util.Map;
 
 public class DivideTaskByQueue extends TaskDivideStrategy {
 
+
+    // TODO task divide strategy defaults to by Queue
     @Override
     public List<KeyValue> divide(DbConnectorConfig dbConnectorConfig, TaskDivideConfig tdc) {
         if (dbConnectorConfig instanceof SinkDbConnectorConfig){

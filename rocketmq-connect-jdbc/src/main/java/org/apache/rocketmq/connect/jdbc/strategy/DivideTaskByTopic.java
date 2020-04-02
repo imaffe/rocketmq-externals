@@ -54,7 +54,6 @@ public class DivideTaskByTopic extends TaskDivideStrategy {
             tableMap.put(tableKey, filter);
             taskTopicList.get(ind).put(dbKey, tableMap);
         }
-
         for (int i = 0; i < parallelism; i++) {
             KeyValue keyValue = new DefaultKeyValue();
 
