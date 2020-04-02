@@ -203,7 +203,14 @@ public class DBUtils {
         map.put("validationQuery", "SELECT 1 FROM DUAL");
         map.put("testWhileIdle", "true");
         log.info("{} config read successful", map);
-        DataSource dataSource = DruidDataSourceFactory.createDataSource(map);
+        DataSource dataSource = null;
+        // TODO apparently here needs some more error handling
+        try {
+            dataSource = DruidDataSourceFactory.createDataSource(map);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         log.info("init data source success");
         return dataSource;
     }
