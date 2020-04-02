@@ -128,7 +128,9 @@ public class JdbcSourceTask extends SourceTask {
     public void start(KeyValue props) {
         try {
             ConfigUtil.load(props, this.config);
+            log.info("jdbc source task started");
             dataSource = DBUtils.initDataSource(config);
+            log.info("jdbc init data source success");
             connection = dataSource.getConnection();
             log.info("init data source success");
         } catch (Exception e) {
