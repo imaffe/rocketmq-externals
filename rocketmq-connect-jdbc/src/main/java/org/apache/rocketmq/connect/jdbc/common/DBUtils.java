@@ -197,11 +197,11 @@ public class DBUtils {
         map.put("password", config.getDbPassword());
         map.put("initialSize", "1");
         map.put("maxActive", "2");
-        map.put("maxWait", "60000");
+        map.put("maxWait", "6000");
         map.put("timeBetweenEvictionRunsMillis", "60000");
         map.put("minEvictableIdleTimeMillis", "300000");
         // TODO this validation query might not be correct
-        map.put("validationQuery", "SELECT 1");
+        map.put("validationQuery", "SELECT 1 FROM DUAL");
         map.put("testWhileIdle", "true");
         log.info("{} config read successful", map);
         DataSource dataSource = null;
@@ -209,6 +209,7 @@ public class DBUtils {
         log.info("try creating datasource");
         try {
             dataSource = DruidDataSourceFactory.createDataSource(map);
+            log.info("created data source");
         } catch (Exception e) {
             e.printStackTrace();
         }
