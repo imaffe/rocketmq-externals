@@ -196,49 +196,49 @@ public class DBUtils {
 
     public static DataSource initDataSource(Config config) throws Exception {
         Map<String, String> map = new HashMap<>();
-//        map.put("driverClassName", "com.mysql.cj.jdbc.Driver");
-//        map.put("url",
-//                "jdbc:mysql://" + config.getDbUrl() + ":" + config.getDbPort()  + "?useSSL=false&verifyServerCertificate=false&serverTimezone=GMT%2B8&characterEncoding=utf8");
-//        map.put("username", config.getDbUsername());
-//        map.put("password", config.getDbPassword());
-//        map.put("initialSize", "1");
-//        map.put("maxActive", "2");
-//        map.put("maxWait", "6000");
-//        map.put("timeBetweenEvictionRunsMillis", "60000");
-//        map.put("minEvictableIdleTimeMillis", "300000");
-//        // TODO this validation query might not be correct
-//        map.put("validationQuery", "SELECT 1 FROM DUAL");
-//        map.put("testWhileIdle", "true");
+        map.put("driverClassName", "com.mysql.cj.jdbc.Driver");
+        map.put("url",
+                "jdbc:mysql://" + config.getDbUrl() + ":" + config.getDbPort()  + "?useSSL=false&verifyServerCertificate=false&serverTimezone=GMT%2B8&characterEncoding=utf8");
+        map.put("username", config.getDbUsername());
+        map.put("password", config.getDbPassword());
+        map.put("initialSize", "1");
+        map.put("maxActive", "2");
+        map.put("maxWait", "6000");
+        map.put("timeBetweenEvictionRunsMillis", "60000");
+        map.put("minEvictableIdleTimeMillis", "300000");
+        // TODO this validation query might not be correct
+        map.put("validationQuery", "SELECT 1 FROM DUAL");
+        map.put("testWhileIdle", "true");
 
         log.info("{} config read successful", map);
         DataSource dataSource = null;
         // TODO apparently here needs some more error handling
         log.info("try creating datasource2");
 
-        ExecutorService executor = Executors.newCachedThreadPool();
-        Callable<Object> task = new Callable<Object>() {
-            public Object call() throws Exception {
-                return DruidDataSourceFactory.createDataSource(map);
-            }
-        };
-        Future<Object> future = executor.submit(task);
-        try {
-            dataSource = (DataSource) future.get(5, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            future.cancel(true); // may or may not desire this
-        }
-
+//        ExecutorService executor = Executors.newCachedThreadPool();
+//        Callable<Object> task = new Callable<Object>() {
+//            public Object call() throws Exception {
+//                return DruidDataSourceFactory.createDataSource(map);
+//            }
+//        };
+//        Future<Object> future = executor.submit(task);
 //        try {
-//            //if(map != null) throw new RuntimeException("init data source error");
-//            dataSource = DruidDataSourceFactory.createDataSource(map);
-//            log.info("created data source");
-//        } catch (RuntimeException e) {
-//            throw e;
+//            dataSource = (DataSource) future.get(5, TimeUnit.SECONDS);
 //        } catch (Exception e) {
-//            throw new RuntimeException("init data source error", e);
+//            e.printStackTrace();
+//        } finally {
+//            future.cancel(true); // may or may not desire this
 //        }
+
+        try {
+            //if(map != null) throw new RuntimeException("init data source error");
+            dataSource = DruidDataSourceFactory.createDataSource(map);
+            log.info("created data source");
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("init data source error", e);
+        }
 
         log.info("init data source success");
         return dataSource;
