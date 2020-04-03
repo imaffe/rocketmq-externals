@@ -60,7 +60,6 @@ public class JdbcSinkConnector extends SinkConnector {
         this.srcMQAdminExt.setInstanceName(Utils.createInstanceName(((SinkDbConnectorConfig) this.dbConnectorConfig).getSrcNamesrvs()));
 
         log.info("Sink connector nameserver address: {}", this.srcMQAdminExt.getNamesrvAddr());
-        log.info("Sink connector nameserver address list: {}", this.srcMQAdminExt.getNameServerAddressList());
         try {
             this.srcMQAdminExt.start();
             log.info("RocketMQ srcMQAdminExt started");
@@ -68,6 +67,7 @@ public class JdbcSinkConnector extends SinkConnector {
         } catch (MQClientException e) {
             log.error("Replicator start failed for `srcMQAdminExt` exception.", e);
         }
+        log.info("Sink connector nameserver address list: {}", this.srcMQAdminExt.getNameServerAddressList());
 
         adminStarted = true;
     }
