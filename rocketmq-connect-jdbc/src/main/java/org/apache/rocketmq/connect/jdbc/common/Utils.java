@@ -59,8 +59,15 @@ public class Utils {
     public static List<BrokerData> examineBrokerData(DefaultMQAdminExt defaultMQAdminExt, String topic,
         String cluster) throws RemotingException, MQClientException, InterruptedException {
         List<BrokerData> brokerList = new ArrayList<>();
+        TopicRouteData topicRouteData = null;
+        log.info("Utils.examinBrokerData 1   : {}", defaultMQAdminExt.getNameServerAddressList());
+        try {
+            topicRouteData = defaultMQAdminExt.examineTopicRouteInfo(topic);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
 
-        TopicRouteData topicRouteData = defaultMQAdminExt.examineTopicRouteInfo(topic);
+        log.info("Utils.examinBrokerData 2: {}", defaultMQAdminExt.getNameServerAddressList());
         if (topicRouteData.getBrokerDatas() != null) {
             for (BrokerData broker : topicRouteData.getBrokerDatas()) {
                 if (StringUtils.equals(broker.getCluster(), cluster)) {
