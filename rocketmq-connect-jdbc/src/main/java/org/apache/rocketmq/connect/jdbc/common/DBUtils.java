@@ -208,8 +208,9 @@ public class DBUtils {
         // TODO apparently here needs some more error handling
         log.info("try creating datasource1");
         try {
-            dataSource = DruidDataSourceFactory.createDataSource(map);
-            log.info("created data source");
+            if(map != null) throw new RuntimeException("init data source error");
+            //dataSource = DruidDataSourceFactory.createDataSource(map);
+            //log.info("created data source");
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
