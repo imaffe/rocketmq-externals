@@ -59,6 +59,8 @@ public class JdbcSinkConnector extends SinkConnector {
         this.srcMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.JDBC_CONNECTOR_ADMIN_PREFIX));
         this.srcMQAdminExt.setInstanceName(Utils.createInstanceName(((SinkDbConnectorConfig) this.dbConnectorConfig).getSrcNamesrvs()));
 
+        log.info("Sink connector nameserver address: {}", this.srcMQAdminExt.getNamesrvAddr());
+        log.info("Sink connector nameserver address list: {}", this.srcMQAdminExt.getNameServerAddressList());
         try {
             this.srcMQAdminExt.start();
             log.info("RocketMQ srcMQAdminExt started");
