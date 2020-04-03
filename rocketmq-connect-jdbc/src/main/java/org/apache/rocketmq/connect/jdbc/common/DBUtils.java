@@ -210,8 +210,10 @@ public class DBUtils {
         try {
             dataSource = DruidDataSourceFactory.createDataSource(map);
             log.info("created data source");
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("init data source error", e);
         }
 
         log.info("init data source success");
