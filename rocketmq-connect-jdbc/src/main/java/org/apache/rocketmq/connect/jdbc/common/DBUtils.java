@@ -190,23 +190,23 @@ public class DBUtils {
 
     public static DataSource initDataSource(Config config) throws Exception {
         Map<String, String> map = new HashMap<>();
-        map.put("driverClassName", "com.mysql.cj.jdbc.Driver");
-        map.put("url",
-                "jdbc:mysql://" + config.getDbUrl() + ":" + config.getDbPort()  + "?useSSL=false&verifyServerCertificate=false&serverTimezone=GMT%2B8&characterEncoding=utf8");
-        map.put("username", config.getDbUsername());
-        map.put("password", config.getDbPassword());
-        map.put("initialSize", "1");
-        map.put("maxActive", "2");
-        map.put("maxWait", "6000");
-        map.put("timeBetweenEvictionRunsMillis", "60000");
-        map.put("minEvictableIdleTimeMillis", "300000");
-        // TODO this validation query might not be correct
-        map.put("validationQuery", "SELECT 1 FROM DUAL");
-        map.put("testWhileIdle", "true");
+//        map.put("driverClassName", "com.mysql.cj.jdbc.Driver");
+//        map.put("url",
+//                "jdbc:mysql://" + config.getDbUrl() + ":" + config.getDbPort()  + "?useSSL=false&verifyServerCertificate=false&serverTimezone=GMT%2B8&characterEncoding=utf8");
+//        map.put("username", config.getDbUsername());
+//        map.put("password", config.getDbPassword());
+//        map.put("initialSize", "1");
+//        map.put("maxActive", "2");
+//        map.put("maxWait", "6000");
+//        map.put("timeBetweenEvictionRunsMillis", "60000");
+//        map.put("minEvictableIdleTimeMillis", "300000");
+//        // TODO this validation query might not be correct
+//        map.put("validationQuery", "SELECT 1 FROM DUAL");
+//        map.put("testWhileIdle", "true");
         log.info("{} config read successful", map);
         DataSource dataSource = null;
         // TODO apparently here needs some more error handling
-        log.info("try creating datasource");
+        log.info("try creating datasource1");
         try {
             dataSource = DruidDataSourceFactory.createDataSource(map);
             log.info("created data source");
