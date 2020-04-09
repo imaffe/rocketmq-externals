@@ -200,6 +200,7 @@ public class DBUtils {
         map.put("maxWait", "60000");
         map.put("timeBetweenEvictionRunsMillis", "60000");
         map.put("connectionErrorRetryAttempts", "2");
+        map.put("breakAfterAcquireFailure", "true");
         map.put("minEvictableIdleTimeMillis", "300000");
         map.put("validationQuery", "SELECT 1 FROM DUAL");
         map.put("testWhileIdle", "true");
