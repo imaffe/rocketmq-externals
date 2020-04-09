@@ -90,10 +90,12 @@ public class JdbcSinkTask extends SinkTask {
     @Override
     public void start(KeyValue props) {
         try {
+            log.info("Jdbc Sink Task start called");
             ConfigUtil.load(props, this.config);
             dataSource = DBUtils.initDataSource(config);
             connection = dataSource.getConnection();
-            log.info("init data source success");
+            log.info("connection established");
+
         } catch (Exception e) {
             log.error("Cannot start Jdbc Sink Task because of configuration error{}", e);
         }
