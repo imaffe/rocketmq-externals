@@ -258,6 +258,7 @@ public class WorkerSinkTask implements Runnable {
             }
             sinkTask.start(taskConfig);
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
+            // TODO here detect if stopping
             while (!isStopping.get()) {
                 pullMessageFromQueues();
             }

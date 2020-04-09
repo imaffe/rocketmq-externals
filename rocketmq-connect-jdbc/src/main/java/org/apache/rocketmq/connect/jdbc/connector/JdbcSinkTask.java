@@ -98,6 +98,8 @@ public class JdbcSinkTask extends SinkTask {
 
         } catch (Exception e) {
             log.error("Cannot start Jdbc Sink Task because of configuration error{}", e);
+            // TODO delete the
+
         }
         String mode = config.getMode();
         if (mode.equals("bulk")) {
@@ -115,12 +117,15 @@ public class JdbcSinkTask extends SinkTask {
     public void stop() {
 
         log.info("jdbc sink stop called");
+        // didn't stop the running thread as well
         try {
+            // TODO connection is not null but also cannot call close
             if (connection != null){
                 connection.close();
                 log.info("jdbc sink task connection is closed.");
             }
         } catch (Throwable e) {
+            // TODO even this line was not printed
             log.warn("sink task stop error while closing connection to {}", "jdbc", e);
         }
     }

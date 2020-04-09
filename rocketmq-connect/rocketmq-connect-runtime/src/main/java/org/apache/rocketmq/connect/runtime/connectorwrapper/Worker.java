@@ -298,7 +298,7 @@ public class Worker {
                             (SourceTask) task, keyValue,
                             new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
-                    // TODO here it submitts the task
+                    // TODO here it submitts the task, but never stopped it
                     this.taskExecutor.submit(workerSourceTask);
                     this.workingTasks.add(workerSourceTask);
                 } else if (task instanceof SinkTask) {
