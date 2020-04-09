@@ -113,6 +113,8 @@ public class JdbcSinkTask extends SinkTask {
 
     @Override
     public void stop() {
+
+        log.info("jdbc sink stop called");
         try {
             if (connection != null){
                 connection.close();
