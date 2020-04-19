@@ -237,6 +237,7 @@ public class WorkerSinkTask implements Runnable {
             if (!StringUtils.isEmpty(topicNamesStr)) {
                 String[] topicNames = topicNamesStr.split(COMMA);
                 for (String topicName : topicNames) {
+                    log.info("Trying to fetch topicRouteInfo for topic" + topicName);
                     final Set<MessageQueue> messageQueues = consumer.fetchSubscribeMessageQueues(topicName);
                     for (MessageQueue messageQueue : messageQueues) {
                         final long offset = consumer.searchOffset(messageQueue, TIMEOUT);
