@@ -309,7 +309,7 @@ public class Worker {
                     consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
                     consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
                     consumer.start();
-
+                    log.info("Sink Task Consumer Namesrv Address : " + connectConfig.getNamesrvAddr());
                     WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
                             (SinkTask) task, keyValue,
                             new PositionStorageReaderImpl(offsetManagementService),
