@@ -237,17 +237,19 @@ public class WorkerSinkTask implements Runnable {
             if (!StringUtils.isEmpty(topicNamesStr)) {
                 String[] topicNames = topicNamesStr.split(COMMA);
                 for (String topicName : topicNames) {
-                    log.info("Trying to fetch topicRouteInfo for topic" + topicName);
+                    log.info("Trying to fetch topicRouteInfo for topic :" + topicName);
+                    // TODO why didn't catch it or process it
                     final Set<MessageQueue> messageQueues = consumer.fetchSubscribeMessageQueues(topicName);
                     for (MessageQueue messageQueue : messageQueues) {
                         final long offset = consumer.searchOffset(messageQueue, TIMEOUT);
                         messageQueuesOffsetMap.put(messageQueue, offset);
                     }
+                    // TODO what does this mean here
                     messageQueues.addAll(messageQueues);
                 }
                 log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
             } else {
-                log.error("Lack of sink comsume topicNames config");
+                log.error("Lack of sink consume topicNames config");
             }
 
             for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
@@ -257,6 +259,7 @@ public class WorkerSinkTask implements Runnable {
                     messageQueuesOffsetMap.put(messageQueue, convertToOffset(byteBuffer));
                 }
             }
+            log.info("Tyring to start Sink task, config:{}", JSON.toJSONString(taskConfig));
             sinkTask.start(taskConfig);
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
             // TODO here detect if stopping

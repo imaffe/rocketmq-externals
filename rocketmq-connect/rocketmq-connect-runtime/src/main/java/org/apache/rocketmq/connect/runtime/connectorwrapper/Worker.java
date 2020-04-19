@@ -130,7 +130,7 @@ public class Worker {
      */
     public synchronized void startConnectors(Map<String, ConnectKeyValue> connectorConfigs,
                                              ConnectController connectController) throws Exception {
-        log.info("starting connectors");
+
         Set<WorkerConnector> stoppedConnector = new HashSet<>();
         for (WorkerConnector workerConnector : workingConnectors) {
             String connectorName = workerConnector.getConnectorName();
@@ -144,7 +144,7 @@ public class Worker {
             }
         }
         // TODO why stopped connectors are not working
-        log.info("removing connectors");
+
 
         workingConnectors.removeAll(stoppedConnector);
 
@@ -165,7 +165,6 @@ public class Worker {
                 newConnectors.put(connectorName, connectorConfigs.get(connectorName));
             }
         }
-
         for (String connectorName : newConnectors.keySet()) {
             ConnectKeyValue keyValue = newConnectors.get(connectorName);
             String connectorClass = keyValue.getString(RuntimeConfigDefine.CONNECTOR_CLASS);
