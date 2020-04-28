@@ -184,6 +184,7 @@ public class WorkerSourceTask implements WorkerTask {
             ByteBuffer partition = sourceDataEntry.getSourcePartition();
             Optional<ByteBuffer> opartition = Optional.ofNullable(partition);
             ByteBuffer position = sourceDataEntry.getSourcePosition();
+            // TODO should be position instead of partition
             Optional<ByteBuffer> oposition = Optional.ofNullable(partition);
             sourceDataEntry.setSourcePartition(null);
             sourceDataEntry.setSourcePosition(null);

@@ -23,7 +23,6 @@ import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.data.Converter;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.source.SourceTask;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,7 +35,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang3.StringUtils;
@@ -232,7 +230,7 @@ public class Worker {
         for (String connectorName : taskConfigs.keySet()) {
             for (ConnectKeyValue keyValue : taskConfigs.get(connectorName)) {
                 boolean isNewTask = true;
-                if(isConfigInSet(keyValue, runningTasks) || isConfigInSet(keyValue, pendingTasks.keySet()) || isConfigInSet(keyValue, errorTasks)) {
+                if (isConfigInSet(keyValue, runningTasks) || isConfigInSet(keyValue, pendingTasks.keySet()) || isConfigInSet(keyValue, errorTasks)) {
                     isNewTask = false;
                 }
                 if (isNewTask) {
@@ -283,6 +281,7 @@ public class Worker {
                     DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
                     consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
                     consumer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
+                    // TODO how does consumer group affect the message queues
                     consumer.setConsumerGroup(ConnectUtil.createGroupName(connectConfig.getRmqConsumerGroup()));
                     consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
                     consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
@@ -345,11 +344,11 @@ public class Worker {
 
             // TODO move new stopping tasks
             if (needStop) {
-                    workerTask.stop();
-                    // TODO modify the logging information here
-                    log.info("Task stopping, connector name {}, config {}", workerTask.getConnectorName(), workerTask.getTaskConfig());
-                    runningTasks.remove(runnable);
-                    stoppingTasks.put(runnable, 0);
+                workerTask.stop();
+                // TODO modify the logging information here
+                log.info("Task stopping, connector name {}, config {}", workerTask.getConnectorName(), workerTask.getTaskConfig());
+                runningTasks.remove(runnable);
+                stoppingTasks.put(runnable, 0);
             }
         }
 
@@ -370,7 +369,7 @@ public class Worker {
                 stoppingTasks.remove(runnable);
                 errorTasks.add(runnable);
             } else if (WorkerTaskState.STOPPING == workerTask.getState()) {
-                if(stopRetry> MAX_STOP_RETRY) {
+                if (stopRetry > MAX_STOP_RETRY) {
                     // TODO force stop, need to add exception handling logic
                     stoppingTasks.remove(runnable);
                     errorTasks.add(runnable);
@@ -437,7 +436,7 @@ public class Worker {
 
 
     private boolean isConfigInSet(ConnectKeyValue keyValue, Set<Runnable> set) {
-        for(Runnable runnable : set) {
+        for (Runnable runnable : set) {
             WorkerSourceTask workerSourceTask = null;
             WorkerSinkTask workerSinkTask = null;
             if (runnable instanceof WorkerSourceTask) {
@@ -475,7 +474,15 @@ public class Worker {
         }
     }
 
+    // TODO should Shutdown ExecutorService here
     public void stop() {
+        // TODO persist currently running task status
+        // TODO or we can first try to cancel all tasks,
+        // TODO persist their exit cause, and call shutdown()
+        // TODO gracefully
+        taskExecutor.shutdownNow();
+
+        // shutdown producers
         if (this.producerStarted && this.producer != null) {
             this.producer.shutdown();
             this.producerStarted = false;
