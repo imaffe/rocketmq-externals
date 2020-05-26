@@ -15,10 +15,9 @@
  *  limitations under the License.
  */
 package org.apache.rocketmq.connect.runtime.connectorwrapper;
-
-
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 
+// TODO can we consider to use Callable ?
 public interface WorkerTask extends Runnable {
 
     public abstract WorkerTaskState getState();

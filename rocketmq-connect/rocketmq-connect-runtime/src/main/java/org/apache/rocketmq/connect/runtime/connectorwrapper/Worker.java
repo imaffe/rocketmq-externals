@@ -352,7 +352,7 @@ public class Worker {
             }
         }
 
-        // TODO STEP 4 check running tasks
+        // TODO STEP 4 check stopping tasks
         for (Map.Entry<Runnable, Integer> entry : stoppingTasks.entrySet()) {
             Runnable runnable = entry.getKey();
             WorkerTask workerTask = (WorkerTask) runnable;
@@ -362,6 +362,10 @@ public class Worker {
             // TODO need to add explicit error handling here
             if (WorkerTaskState.STOPPED == workerTask.getState()) {
                 // concurrent modification Exception ? Will it pop that in the
+                // TODO should check the future state for this task
+                if (!future.isDone()) {
+                    log.error("[BUG] Stopped task should have its Future.isDone() true, but false");
+                }
                 stoppingTasks.remove(runnable);
                 stoppedTasks.add(runnable);
             } else if (WorkerTaskState.ERROR == workerTask.getState()) {
@@ -416,16 +420,16 @@ public class Worker {
                 future.get(1000, TimeUnit.MILLISECONDS);
             } catch (ExecutionException e) {
                 Throwable t = e.getCause();
-                log.info("Stopped Tasks should not throw any exception");
+                log.info("[BUG] Stopped Tasks should not throw any exception");
                 t.printStackTrace();
             } catch (CancellationException e) {
-                log.info("Stopped Tasks throws PrintStackTrace");
+                log.info("[BUG] Stopped Tasks throws PrintStackTrace");
                 e.printStackTrace();
             } catch (TimeoutException e) {
-                log.info("Stopped Tasks should not throw any exception");
+                log.info("[BUG] Stopped Tasks should not throw any exception");
                 e.printStackTrace();
             } catch (InterruptedException e) {
-                log.info("Stopped Tasks should not throw any exception");
+                log.info("[BUG] Stopped Tasks should not throw any exception");
                 e.printStackTrace();
             }
             finally {

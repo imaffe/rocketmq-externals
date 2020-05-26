@@ -136,28 +136,27 @@ public class WorkerSourceTask implements WorkerTask {
                 }
             });
             sourceTask.start(taskConfig);
+            state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
+            log.info("Source task start, config:{}", JSON.toJSONString(taskConfig));
+            while (!isStopping.get()) {
+                try {
+                    Collection<SourceDataEntry> toSendEntries = sourceTask.poll();
+                    if (null != toSendEntries && toSendEntries.size() > 0) {
+                        sendRecord(toSendEntries);
+                    }
+                } catch (Exception e) {
+                    log.warn("Source task runtime exception", e);
+                    state.set(WorkerTaskState.ERROR);
+                }
+            }
+            sourceTask.stop();
+            state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
+            log.info("Source task stop, config:{}", JSON.toJSONString(taskConfig));
         } catch (Exception e) {
+            // TODO probably we want more versions of granularity
             log.error("Run task failed.", e);
-            // TODO should call sinkTask.stop() and exit
-            this.stop();
             state.set(WorkerTaskState.ERROR);
         }
-
-        state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
-        log.info("Source task start, config:{}", JSON.toJSONString(taskConfig));
-        while (!isStopping.get()) {
-            try {
-                Collection<SourceDataEntry> toSendEntries = sourceTask.poll();
-                if (null != toSendEntries && toSendEntries.size() > 0) {
-                    sendRecord(toSendEntries);
-                }
-            } catch (Exception e) {
-                log.warn("Source task runtime exception", e);
-            }
-        }
-        sourceTask.stop();
-        state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
-        log.info("Source task stop, config:{}", JSON.toJSONString(taskConfig));
     }
 
     public Map<ByteBuffer, ByteBuffer> getPositionData() {
