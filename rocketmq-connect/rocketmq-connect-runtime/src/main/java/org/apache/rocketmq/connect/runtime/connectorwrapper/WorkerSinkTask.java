@@ -287,7 +287,7 @@ public class WorkerSinkTask implements WorkerTask {
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
             // TODO jobs running
             while (state.get() == WorkerTaskState.RUNNING) {
-                    pullMessageFromQueues();
+                pullMessageFromQueues();
             }
 
             // TODO release dependencies gracefully, need to exit
