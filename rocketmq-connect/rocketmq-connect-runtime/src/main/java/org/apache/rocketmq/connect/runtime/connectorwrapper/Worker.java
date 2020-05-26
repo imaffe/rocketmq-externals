@@ -602,7 +602,7 @@ public class Worker {
             log.info(this.getServiceName() + " service started");
 
             while (!this.isStopped()) {
-                this.waitForRunning(100);
+                this.waitForRunning(1000);
                 try {
                     Worker.this.maintainConnectorState();
                     Worker.this.maintainTaskState();
