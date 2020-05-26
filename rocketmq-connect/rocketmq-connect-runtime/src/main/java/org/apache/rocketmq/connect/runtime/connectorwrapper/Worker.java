@@ -78,10 +78,14 @@ public class Worker {
 
     private Set<Runnable> errorTasks = new ConcurrentSet<>();
 
+    private Set<Runnable> cleanedErrorTasks = new ConcurrentSet<>();
+
     private Map<Runnable, Integer> stoppingTasks = new ConcurrentHashMap<>();
 
 
     private Set<Runnable> stoppedTasks = new ConcurrentSet<>();
+
+    private Set<Runnable> cleanedStoppedTasks = new ConcurrentSet<>();
 
     /**
      * Current running tasks to its Future map.
@@ -322,8 +326,8 @@ public class Worker {
                 }
             } else {
                 // TODO should throw invalid state exception
+                log.error("[BUG] Illegal State in when checking pending tasks");
             }
-
         }
 
         // TODO STEP 3:
@@ -363,8 +367,9 @@ public class Worker {
             if (WorkerTaskState.STOPPED == workerTask.getState()) {
                 // concurrent modification Exception ? Will it pop that in the
                 // TODO should check the future state for this task
-                if (!future.isDone()) {
-                    log.error("[BUG] Stopped task should have its Future.isDone() true, but false");
+
+                if (null == future || !future.isDone()) {
+                    log.error("[BUG] future is null or Stopped task should have its Future.isDone() true, but false");
                 }
                 stoppingTasks.remove(runnable);
                 stoppedTasks.add(runnable);
@@ -383,7 +388,7 @@ public class Worker {
                 }
             } else {
                 // TODO should throw illegal state exception
-                log.error("Illegal State in checkRunningTasks");
+                log.error("Illegal State in check stopping tasks");
             }
         }
 
@@ -393,8 +398,13 @@ public class Worker {
             // TODO try to shutdown gracefully
             workerTask.cleanup();
             Future future = taskToFutureMap.get(runnable);
+
             try {
-                future.get(1000, TimeUnit.MILLISECONDS);
+                if (null != future) {
+                    future.get(1000, TimeUnit.MILLISECONDS);
+                } else {
+                    log.error("[BUG] errorTasks reference not found in taskFutureMap");
+                }
             } catch (ExecutionException e) {
                 Throwable t = e.getCause();
             } catch (CancellationException e) {
@@ -405,8 +415,10 @@ public class Worker {
 
             }
             finally {
-                // TODO should I use finally here
+                // TODO need to remove from errorTasks as well.
                 taskToFutureMap.remove(runnable);
+                errorTasks.remove(runnable);
+                cleanedErrorTasks.add(runnable);
             }
         }
 
@@ -417,7 +429,11 @@ public class Worker {
             workerTask.cleanup();
             Future future = taskToFutureMap.get(runnable);
             try {
-                future.get(1000, TimeUnit.MILLISECONDS);
+                if (null != future) {
+                    future.get(1000, TimeUnit.MILLISECONDS);
+                } else {
+                    log.error("[BUG] stopped Tasks reference not found in taskFutureMap");
+                }
             } catch (ExecutionException e) {
                 Throwable t = e.getCause();
                 log.info("[BUG] Stopped Tasks should not throw any exception");
@@ -434,6 +450,8 @@ public class Worker {
             }
             finally {
                 taskToFutureMap.remove(runnable);
+                stoppedTasks.remove(runnable);
+                cleanedStoppedTasks.add(runnable);
             }
         }
     }
