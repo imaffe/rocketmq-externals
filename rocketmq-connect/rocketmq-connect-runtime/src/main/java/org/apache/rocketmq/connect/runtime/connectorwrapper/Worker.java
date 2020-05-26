@@ -308,7 +308,6 @@ public class Worker {
         for (Map.Entry<Runnable, Integer> entry : pendingTasks.entrySet()) {
             Runnable runnable = entry.getKey();
             int startRetry = entry.getValue();
-
             WorkerTaskState state = ((WorkerTask) runnable).getState();
 
             if (WorkerTaskState.ERROR == state) {
@@ -326,34 +325,49 @@ public class Worker {
                 }
             } else {
                 // TODO should throw invalid state exception
-                log.error("[BUG] Illegal State in when checking pending tasks");
+                log.error("[BUG] Illegal State in when checking pending tasks, {} is in {} state"
+                    , ((WorkerTask) runnable).getConnectorName() ,state.toString());
             }
         }
 
-        // TODO STEP 3:
+        // TODO STEP 3: check running tasks and put to error status
         for (Runnable runnable : runningTasks) {
             WorkerTask workerTask = (WorkerTask) runnable;
             String connectorName = workerTask.getConnectorName();
             ConnectKeyValue taskConfig = workerTask.getTaskConfig();
             List<ConnectKeyValue> keyValues = taskConfigs.get(connectorName);
-            boolean needStop = true;
-            if (null != keyValues && keyValues.size() > 0) {
-                for (ConnectKeyValue keyValue : keyValues) {
-                    if (keyValue.equals(taskConfig)) {
-                        needStop = false;
-                        break;
+            WorkerTaskState state = ((WorkerTask) runnable).getState();
+
+
+            if (WorkerTaskState.ERROR == state) {
+                errorTasks.add(runnable);
+                runningTasks.remove(runnable);
+            } else if (WorkerTaskState.RUNNING == state) {
+                boolean needStop = true;
+                if (null != keyValues && keyValues.size() > 0) {
+                    for (ConnectKeyValue keyValue : keyValues) {
+                        if (keyValue.equals(taskConfig)) {
+                            needStop = false;
+                            break;
+                        }
                     }
                 }
+
+                // TODO move new stopping tasks
+                if (needStop) {
+                    workerTask.stop();
+                    // TODO modify the logging information here
+                    log.info("Task stopping, connector name {}, config {}", workerTask.getConnectorName(), workerTask.getTaskConfig());
+                    runningTasks.remove(runnable);
+                    stoppingTasks.put(runnable, 0);
+                }
+            } else {
+                // TODO should throw invalid state exception
+                log.error("[BUG] Illegal State in when checking running tasks, {} is in {} state"
+                    , ((WorkerTask) runnable).getConnectorName() ,state.toString());
             }
 
-            // TODO move new stopping tasks
-            if (needStop) {
-                workerTask.stop();
-                // TODO modify the logging information here
-                log.info("Task stopping, connector name {}, config {}", workerTask.getConnectorName(), workerTask.getTaskConfig());
-                runningTasks.remove(runnable);
-                stoppingTasks.put(runnable, 0);
-            }
+
         }
 
         // TODO STEP 4 check stopping tasks
@@ -362,9 +376,10 @@ public class Worker {
             WorkerTask workerTask = (WorkerTask) runnable;
             int stopRetry = entry.getValue();
             Future future = taskToFutureMap.get(runnable);
+            WorkerTaskState state = ((WorkerTask) runnable).getState();
             // exited normally
             // TODO need to add explicit error handling here
-            if (WorkerTaskState.STOPPED == workerTask.getState()) {
+            if (WorkerTaskState.STOPPED == state) {
                 // concurrent modification Exception ? Will it pop that in the
                 // TODO should check the future state for this task
 
@@ -373,11 +388,11 @@ public class Worker {
                 }
                 stoppingTasks.remove(runnable);
                 stoppedTasks.add(runnable);
-            } else if (WorkerTaskState.ERROR == workerTask.getState()) {
+            } else if (WorkerTaskState.ERROR == state) {
                     // TODO we need to cancel this state
                 stoppingTasks.remove(runnable);
                 errorTasks.add(runnable);
-            } else if (WorkerTaskState.STOPPING == workerTask.getState()) {
+            } else if (WorkerTaskState.STOPPING == state) {
                 if (stopRetry > MAX_STOP_RETRY) {
                     // TODO force stop, need to add exception handling logic
                     stoppingTasks.remove(runnable);
@@ -388,7 +403,8 @@ public class Worker {
                 }
             } else {
                 // TODO should throw illegal state exception
-                log.error("Illegal State in check stopping tasks");
+                log.error("[BUG] Illegal State in when checking stopping tasks, {} is in {} state"
+                    , ((WorkerTask) runnable).getConnectorName() ,state.toString());
             }
         }
 
