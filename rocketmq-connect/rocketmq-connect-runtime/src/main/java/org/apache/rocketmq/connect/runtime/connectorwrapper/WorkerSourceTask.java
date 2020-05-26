@@ -115,6 +115,7 @@ public class WorkerSourceTask implements WorkerTask {
         this.isStopping = new AtomicBoolean(false);
         this.producer = producer;
         this.recordConverter = recordConverter;
+        this.state = new AtomicReference<>(WorkerTaskState.NEW);
     }
 
     /**
