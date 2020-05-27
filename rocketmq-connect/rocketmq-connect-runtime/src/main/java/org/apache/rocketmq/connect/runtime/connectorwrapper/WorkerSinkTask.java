@@ -279,7 +279,7 @@ public class WorkerSinkTask implements WorkerTask {
             // we assume executed here means we are safe
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
-            // TODO jobs running
+//            // TODO jobs running
 //            try {
 //                while (WorkerTaskState.RUNNING == state.get()) {
 //                    // TODO this me
@@ -289,15 +289,18 @@ public class WorkerSinkTask implements WorkerTask {
 //                log.info("interrupted during pullMessageFromQueues, continue to shutdown");
 //            }
 
+
+            // TODO how to break a loop effectively
             while (WorkerTaskState.RUNNING == state.get()) {
+                // this method can block up to 3 minutes long
                 pullMessageFromQueues();
             }
 
-            log.info("Sink task is stopping, config:{}", JSON.toJSONString(taskConfig));
-            // TODO release dependencies gracefully, need to exit
             sinkTask.stop();
             state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
             log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
+            // TODO release dependencies gracefully, need to exit
+
         } catch (Exception e) {
             // TODO this is just a temporary solution
             log.error("Run task failed.", e);
@@ -312,6 +315,7 @@ public class WorkerSinkTask implements WorkerTask {
             // TODO need to look into this PullBlockIfNotFound
             // TODO how to prevent this blocking forever, guess I have to understand what does this mean?
             log.info("START pullBlockIfNotFound, time started : {}", System.currentTimeMillis());
+            // TODO this method blocked longer than expected
             final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
 
             long currentTime = System.currentTimeMillis();
