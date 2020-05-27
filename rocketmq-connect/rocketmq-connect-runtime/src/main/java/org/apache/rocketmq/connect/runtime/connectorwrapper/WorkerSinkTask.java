@@ -447,7 +447,8 @@ public class WorkerSinkTask implements WorkerTask {
 
         StringBuilder sb = new StringBuilder();
         sb.append("connectorName:" + connectorName)
-            .append("\nConfigs:" + JSON.toJSONString(taskConfig));
+            .append("\nConfigs:" + JSON.toJSONString(taskConfig))
+            .append("\nState:" + this.state.get().toString() );
         return sb.toString();
     }
 
