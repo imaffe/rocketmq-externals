@@ -284,6 +284,7 @@ public class WorkerSinkTask implements WorkerTask {
                 pullMessageFromQueues();
             }
 
+            log.info("Sink task is stopping, config:{}", JSON.toJSONString(taskConfig));
             // TODO release dependencies gracefully, need to exit
             sinkTask.stop();
             state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
