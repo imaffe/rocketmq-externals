@@ -307,10 +307,11 @@ public class WorkerSinkTask implements WorkerTask {
 
     private void pullMessageFromQueues() throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
         long startTimeStamp = System.currentTimeMillis();
-        log.info("START pullMessageFromQueues, time elapsed : {}", startTimeStamp);
+        log.info("START pullMessageFromQueues, time started : {}", startTimeStamp);
         for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
             // TODO need to look into this PullBlockIfNotFound
             // TODO how to prevent this blocking forever, guess I have to understand what does this mean?
+            log.info("START pullBlockIfNotFound, time started : {}", System.currentTimeMillis());
             final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
 
             long currentTime = System.currentTimeMillis();
