@@ -280,6 +280,15 @@ public class WorkerSinkTask implements WorkerTask {
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
             // TODO jobs running
+//            try {
+//                while (WorkerTaskState.RUNNING == state.get()) {
+//                    // TODO this me
+//                    pullMessageFromQueues();
+//                }
+//            } catch (InterruptedException e) {
+//                log.info("interrupted during pullMessageFromQueues, continue to shutdown");
+//            }
+
             while (WorkerTaskState.RUNNING == state.get()) {
                 pullMessageFromQueues();
             }
@@ -449,6 +458,7 @@ public class WorkerSinkTask implements WorkerTask {
     @Override
     public void timeout() {
         // TODO we might want to know the cause of the error
+        // TODO should we force exit the thread ?
         this.state.set(WorkerTaskState.ERROR);
     }
     @Override
