@@ -168,7 +168,6 @@ public class WorkerSourceTask implements WorkerTask {
     public void cleanup() {
         if (state.compareAndSet(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
             state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED)) {
-            ;
         } else {
             log.error("[BUG] cleaning a task but it's not in STOPPED or ERROR state");
         }
