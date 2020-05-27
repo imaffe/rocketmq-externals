@@ -165,7 +165,13 @@ public class WorkerSourceTask implements WorkerTask {
     }
 
     @Override
-    public void cleanup() { }
+    public void cleanup() {
+        if (state.compareAndSet(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
+            state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED)) {
+        } else {
+            log.error("[BUG] cleaning a task but it's not in STOPPED or ERROR state");
+        }
+    }
 
     /**
      * Send list of sourceDataEntries to MQ.
@@ -286,7 +292,8 @@ public class WorkerSourceTask implements WorkerTask {
 
         StringBuilder sb = new StringBuilder();
         sb.append("connectorName:" + connectorName)
-            .append("\nConfigs:" + JSON.toJSONString(taskConfig));
+            .append("\nConfigs:" + JSON.toJSONString(taskConfig))
+            .append("\nState:" + state.get().toString());;
         return sb.toString();
     }
 }
