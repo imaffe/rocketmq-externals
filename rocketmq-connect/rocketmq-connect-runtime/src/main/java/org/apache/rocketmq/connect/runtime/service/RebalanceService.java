@@ -26,7 +26,7 @@ public class RebalanceService extends ServiceThread {
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
-    private static long waitInterval = Long.parseLong(System.getProperty("rocketmq.runtime.cluster.rebalance.waitInterval", "10000"));
+    private static long waitInterval = Long.parseLong(System.getProperty("rocketmq.runtime.cluster.rebalance.waitInterval", "20000"));
 
     /**
      * Assign all connectors and tasks to all alive process in the cluster.
