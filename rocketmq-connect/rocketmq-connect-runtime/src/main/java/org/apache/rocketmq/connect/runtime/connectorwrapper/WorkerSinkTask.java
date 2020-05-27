@@ -297,10 +297,15 @@ public class WorkerSinkTask implements WorkerTask {
     }
 
     private void pullMessageFromQueues() throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+        long startTimeStamp = System.currentTimeMillis();
+        log.debug("START pullMessageFromQueues, time elapsed : {}", startTimeStamp);
         for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
             // TODO need to look into this PullBlockIfNotFound
             // TODO how to prevent this blocking forever, guess I have to understand what does this mean?
             final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
+
+            long currentTime = System.currentTimeMillis();
+            log.debug("INSIDE pullMessageFromQueues, time elapsed : {}", currentTime - startTimeStamp);
             if (pullResult.getPullStatus().equals(PullStatus.FOUND)) {
                 final List<MessageExt> messages = pullResult.getMsgFoundList();
                 removePauseQueueMessage(entry.getKey(), messages);
@@ -356,6 +361,9 @@ public class WorkerSinkTask implements WorkerTask {
         if (state.compareAndSet(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
             state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED))
             consumer.shutdown();
+        else {
+            log.error("[BUG] cleaning a task but it's not in STOPPED or ERROR state");
+        }
     }
 
     /**
