@@ -293,7 +293,8 @@ public class WorkerSourceTask implements WorkerTask {
 
         StringBuilder sb = new StringBuilder();
         sb.append("connectorName:" + connectorName)
-            .append("\nConfigs:" + JSON.toJSONString(taskConfig));
+            .append("\nConfigs:" + JSON.toJSONString(taskConfig))
+            .append("\nState:" + state.get().toString());;
         return sb.toString();
     }
 }
