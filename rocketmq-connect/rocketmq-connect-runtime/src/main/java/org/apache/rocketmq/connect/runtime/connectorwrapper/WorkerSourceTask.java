@@ -302,7 +302,7 @@ public class WorkerSourceTask implements WorkerTask {
     public Object getJsonObject() {
         HashMap obj = new HashMap<String, Object>();
         obj.put("connectorName", connectorName);
-        obj.put("configs" , JSON.toJSONString(taskConfig));
+        obj.put("configs", JSON.toJSONString(taskConfig));
         obj.put("state", state.get().toString());
         return obj;
     }
