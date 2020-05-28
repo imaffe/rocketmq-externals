@@ -297,4 +297,13 @@ public class WorkerSourceTask implements WorkerTask {
             .append("\nState:" + state.get().toString());
         return sb.toString();
     }
+
+    @Override
+    public Object getJsonObject() {
+        HashMap obj = new HashMap<String, Object>();
+        obj.put("connectorName", connectorName);
+        obj.put("configs" , JSON.toJSONString(taskConfig));
+        obj.put("state", state.get().toString());
+        return obj;
+    }
 }
