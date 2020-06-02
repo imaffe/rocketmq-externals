@@ -164,6 +164,7 @@ public class CountDownLatch2 {
         }
 
         protected boolean tryReleaseShared(int releases) {
+            // TODO should we use while loop in AQS tryRelease ?
             // Decrement count; signal when transition to zero
             for (;; ) {
                 int c = getState();
