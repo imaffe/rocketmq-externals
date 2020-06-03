@@ -184,7 +184,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     public void removeConnectorConfig(String connectorName) {
 
         ConnectKeyValue config = new ConnectKeyValue();
-        // TODO 用的是同一个OBJECT, 删除的Object，有没有可能出问题了
+
         config.put(RuntimeConfigDefine.UPDATE_TIMESATMP, System.currentTimeMillis());
         config.put(RuntimeConfigDefine.CONFIG_DELETED, 1);
         Map<String, ConnectKeyValue> connectorConfig = new HashMap<>();
@@ -192,8 +192,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         List<ConnectKeyValue> taskConfigList = new ArrayList<>();
         taskConfigList.add(config);
 
-        // TODO concurrent modification caused the update not sucesss?
-        // TODO persisit 的时候就会读，那么有没有可能是这个导致了修改失败
+
         connectorKeyValueStore.put(connectorName, config);
         putTaskConfigs(connectorName, taskConfigList);
         sendSynchronizeConfig();
