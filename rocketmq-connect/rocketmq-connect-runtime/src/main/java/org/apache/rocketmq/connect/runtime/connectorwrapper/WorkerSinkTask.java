@@ -309,6 +309,7 @@ public class WorkerSinkTask implements WorkerTask {
         }
     }
 
+    // TODO  我这里不能catch 就应该直接到抛到最外层去
     private void pullMessageFromQueues() throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
         long startTimeStamp = System.currentTimeMillis();
         log.info("START pullMessageFromQueues, time started : {}", startTimeStamp);
