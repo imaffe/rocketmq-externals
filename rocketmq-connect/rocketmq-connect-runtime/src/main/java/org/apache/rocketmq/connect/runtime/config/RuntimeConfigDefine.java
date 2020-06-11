@@ -74,6 +74,8 @@ public class RuntimeConfigDefine {
 
     public static final String CONNECT_SCHEMA = "connect-schema";
 
+    public static final String CONNECTOR_STARTED = "connector-state";
+
     /**
      * The required key for all configurations.
      */

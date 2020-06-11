@@ -20,6 +20,7 @@ package org.apache.rocketmq.connect.runtime.connectorwrapper;
 import com.alibaba.fastjson.JSON;
 import io.openmessaging.connector.api.Connector;
 import io.openmessaging.connector.api.ConnectorContext;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 
 /**
@@ -41,6 +42,8 @@ public class WorkerConnector {
      * The configs for the current connector.
      */
     private ConnectKeyValue keyValue;
+
+    private AtomicReference<WorkerConnectorState> state;
 
     private final ConnectorContext context;
 

@@ -30,6 +30,8 @@ import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
+import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerConnector;
+import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerConnectorState;
 import org.apache.rocketmq.connect.runtime.converter.ConnAndTaskConfigConverter;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.ListConverter;
@@ -141,16 +143,23 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         ConnectKeyValue exist = connectorKeyValueStore.get(connectorName);
         if (null != exist) {
             Long updateTimestamp = exist.getLong(RuntimeConfigDefine.UPDATE_TIMESATMP);
+            Integer started = exist.getInt(RuntimeConfigDefine.CONNECTOR_STARTED);
             if (null != updateTimestamp) {
                 configs.put(RuntimeConfigDefine.UPDATE_TIMESATMP, updateTimestamp);
+            }
+
+            if (null !=  started) {
+                configs.put(RuntimeConfigDefine.CONNECTOR_STARTED, started);
             }
         }
         if (configs.equals(exist)) {
             return "Connector with same config already exist.";
         }
 
+        // TODO seems like we don't need to load the class here, we only load the class when we want to start the class
         Long currentTimestamp = System.currentTimeMillis();
         configs.put(RuntimeConfigDefine.UPDATE_TIMESATMP, currentTimestamp);
+        configs.put(RuntimeConfigDefine.CONNECTOR_STARTED, 0);
         for (String requireConfig : RuntimeConfigDefine.REQUEST_CONFIG) {
             if (!configs.containsKey(requireConfig)) {
                 return "Request config key: " + requireConfig;
@@ -172,7 +181,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         }
         // TODO is this the problem ? Put is executed after remove ?
         connectorKeyValueStore.put(connectorName, configs);
-        recomputeTaskConfigs(connectorName, connector, currentTimestamp);
+        // TODO shouldn't recomputeTaskConfigs here
         return "";
     }
 

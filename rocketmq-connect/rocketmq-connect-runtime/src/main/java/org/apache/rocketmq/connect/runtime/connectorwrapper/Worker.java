@@ -69,7 +69,9 @@ public class Worker {
      */
     private Set<WorkerConnector> workingConnectors = new ConcurrentSet<>();
 
-    // TODO below are WIP
+    private Map<String, ConnectKeyValue> latestConnectorConfigs = new HashMap<>();
+
+    private ConnectController connectController;
     /**
      * Current running tasks.
      */
@@ -169,61 +171,10 @@ public class Worker {
     public synchronized void startConnectors(Map<String, ConnectKeyValue> connectorConfigs,
                                              ConnectController connectController) throws Exception {
 
-        Set<WorkerConnector> stoppedConnector = new HashSet<>();
-        for (WorkerConnector workerConnector : workingConnectors) {
-            String connectorName = workerConnector.getConnectorName();
-            ConnectKeyValue keyValue = connectorConfigs.get(connectorName);
-            if (null == keyValue || 0 != keyValue.getInt(RuntimeConfigDefine.CONFIG_DELETED)) {
-                workerConnector.stop();
-                log.info("Connector {} stop", workerConnector.getConnectorName());
-                stoppedConnector.add(workerConnector);
-            } else if (!keyValue.equals(workerConnector.getKeyValue())) {
-                workerConnector.reconfigure(keyValue);
-            }
+        synchronized (latestConnectorConfigs) {
+            this.latestConnectorConfigs = connectorConfigs;
         }
-        workingConnectors.removeAll(stoppedConnector);
-
-        if (null == connectorConfigs || 0 == connectorConfigs.size()) {
-            return;
-        }
-        Map<String, ConnectKeyValue> newConnectors = new HashMap<>();
-        for (String connectorName : connectorConfigs.keySet()) {
-            boolean isNewConnector = true;
-            for (WorkerConnector workerConnector : workingConnectors) {
-                if (workerConnector.getConnectorName().equals(connectorName)) {
-                    isNewConnector = false;
-                    break;
-                }
-            }
-            if (isNewConnector) {
-                newConnectors.put(connectorName, connectorConfigs.get(connectorName));
-            }
-        }
-
-        for (String connectorName : newConnectors.keySet()) {
-            ConnectKeyValue keyValue = newConnectors.get(connectorName);
-            String connectorClass = keyValue.getString(RuntimeConfigDefine.CONNECTOR_CLASS);
-            ClassLoader loader = plugin.getPluginClassLoader(connectorClass);
-            final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
-            Class clazz;
-            boolean isolationFlag = false;
-            if (loader instanceof PluginClassLoader) {
-                clazz = ((PluginClassLoader) loader).loadClass(connectorClass, false);
-                isolationFlag = true;
-            } else {
-                clazz = Class.forName(connectorClass);
-            }
-            final Connector connector = (Connector) clazz.getDeclaredConstructor().newInstance();
-            WorkerConnector workerConnector = new WorkerConnector(connectorName, connector, connectorConfigs.get(connectorName), new DefaultConnectorContext(connectorName, connectController));
-            if (isolationFlag) {
-                Plugin.compareAndSwapLoaders(loader);
-            }
-            workerConnector.initialize();
-            workerConnector.start();
-            log.info("Connector {} start", workerConnector.getConnectorName());
-            Plugin.compareAndSwapLoaders(currentThreadLoader);
-            this.workingConnectors.add(workerConnector);
-        }
+        this.connectController = connectController;
     }
 
     /**
@@ -339,8 +290,75 @@ public class Worker {
     }
 
 
-    public void maintainConnectorState() {
+    public void maintainConnectorState() throws Exception {
+        Map<String, ConnectKeyValue> connectorConfigs = new HashMap<>();
+        // TODO read only
+        synchronized (latestConnectorConfigs) {
+            connectorConfigs.putAll(latestConnectorConfigs);
+        }
 
+        Set<WorkerConnector> stoppedConnector = new HashSet<>();
+        for (WorkerConnector workerConnector : workingConnectors) {
+            String connectorName = workerConnector.getConnectorName();
+            ConnectKeyValue keyValue = connectorConfigs.get(connectorName);
+            if (null == keyValue
+                || 0 != keyValue.getInt(RuntimeConfigDefine.CONFIG_DELETED)
+                || 0 == keyValue.getInt(RuntimeConfigDefine.CONNECTOR_STARTED)) {
+                workerConnector.stop();
+                log.info("Connector {} stop", workerConnector.getConnectorName());
+                stoppedConnector.add(workerConnector);
+            } else if (!keyValue.equals(workerConnector.getKeyValue())) {
+                workerConnector.reconfigure(keyValue);
+            }
+        }
+
+        workingConnectors.removeAll(stoppedConnector);
+
+        if (null == connectorConfigs || 0 == connectorConfigs.size()) {
+            return;
+        }
+        Map<String, ConnectKeyValue> newConnectors = new HashMap<>();
+        for (String connectorName : connectorConfigs.keySet()) {
+            boolean isNewConnector = true;
+            for (WorkerConnector workerConnector : workingConnectors) {
+                if (workerConnector.getConnectorName().equals(connectorName)) {
+                    isNewConnector = false;
+                    break;
+                }
+            }
+            if (isNewConnector) {
+                newConnectors.put(connectorName, connectorConfigs.get(connectorName));
+            }
+        }
+
+        for (String connectorName : newConnectors.keySet()) {
+            if (1 == newConnectors.get(connectorName).getInt(RuntimeConfigDefine.CONNECTOR_STARTED)) {
+                ConnectKeyValue keyValue = newConnectors.get(connectorName);
+                String connectorClass = keyValue.getString(RuntimeConfigDefine.CONNECTOR_CLASS);
+                ClassLoader loader = plugin.getPluginClassLoader(connectorClass);
+                final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
+                Class clazz;
+                boolean isolationFlag = false;
+                if (loader instanceof PluginClassLoader) {
+                    clazz = ((PluginClassLoader) loader).loadClass(connectorClass, false);
+                    isolationFlag = true;
+                } else {
+                    clazz = Class.forName(connectorClass);
+                }
+                final Connector connector = (Connector) clazz.getDeclaredConstructor().newInstance();
+                WorkerConnector workerConnector = new WorkerConnector(connectorName, connector, connectorConfigs.get(connectorName), new DefaultConnectorContext(connectorName, connectController));
+                if (isolationFlag) {
+                    Plugin.compareAndSwapLoaders(loader);
+                }
+                workerConnector.initialize();
+                workerConnector.start();
+                log.info("Connector {} start", workerConnector.getConnectorName());
+                Plugin.compareAndSwapLoaders(currentThreadLoader);
+                this.workingConnectors.add(workerConnector);
+                Long currentTimestamp = System.currentTimeMillis();
+                connectController.getConfigManagementService().recomputeTaskConfigs(connectorName, connector, currentTimestamp);
+            }
+        }
     }
 
     public void maintainTaskState() throws Exception {
