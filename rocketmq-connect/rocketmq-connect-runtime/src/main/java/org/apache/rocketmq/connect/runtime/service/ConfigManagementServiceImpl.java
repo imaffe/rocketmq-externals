@@ -166,19 +166,10 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             }
         }
 
-        String connectorClass = configs.getString(RuntimeConfigDefine.CONNECTOR_CLASS);
-        ClassLoader classLoader = plugin.getPluginClassLoader(connectorClass);
-        Class clazz;
-        if (null != classLoader) {
-            clazz = Class.forName(connectorClass, true, classLoader);
-        } else {
-            clazz = Class.forName(connectorClass);
-        }
-        Connector connector = (Connector) clazz.newInstance();
-        String errorMessage = connector.verifyAndSetConfig(configs);
-        if (errorMessage != null && errorMessage.length() > 0) {
-            return errorMessage;
-        }
+        // TODO perhaps verification should be postponed to running,
+        // TODO user are allowed to add a invalid configuration, just like adding an invalid jdbc connection config
+        // TODO we won't validate them until we decide to really establish the connection
+
         // TODO is this the problem ? Put is executed after remove ?
         connectorKeyValueStore.put(connectorName, configs);
         // TODO shouldn't recomputeTaskConfigs here

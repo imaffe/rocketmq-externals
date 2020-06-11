@@ -304,7 +304,12 @@ public class Worker {
             if (null == keyValue
                 || 0 != keyValue.getInt(RuntimeConfigDefine.CONFIG_DELETED)
                 || 0 == keyValue.getInt(RuntimeConfigDefine.CONNECTOR_STARTED)) {
-                workerConnector.stop();
+                try {
+                    workerConnector.stop();
+                } catch (Exception e) {
+                    log.error("Error during connector: {} stop : {}", connectorName, e.toString());
+                }
+
                 log.info("Connector {} stop", workerConnector.getConnectorName());
                 stoppedConnector.add(workerConnector);
             } else if (!keyValue.equals(workerConnector.getKeyValue())) {
@@ -350,8 +355,14 @@ public class Worker {
                 if (isolationFlag) {
                     Plugin.compareAndSwapLoaders(loader);
                 }
-                workerConnector.initialize();
-                workerConnector.start();
+
+                try {
+                    workerConnector.initialize();
+                    workerConnector.start();
+                } catch (Exception e) {
+                    log.error("Error during connector {} initialization : {} ", connectorName, e.toString());
+                }
+
                 log.info("Connector {} start", workerConnector.getConnectorName());
                 Plugin.compareAndSwapLoaders(currentThreadLoader);
                 this.workingConnectors.add(workerConnector);

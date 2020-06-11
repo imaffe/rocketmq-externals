@@ -54,12 +54,17 @@ public class WorkerConnector {
         this.context = context;
     }
 
-    public void initialize() {
+    // TODO should add more error handling mechanisms here.
+    public void initialize() throws Exception {
         connector.initialize(this.context);
     }
 
-    public void start() {
-        connector.verifyAndSetConfig(keyValue);
+    // TODO should introduce some error handling mechanism here
+    public void start() throws Exception {
+        String errorMessage = connector.verifyAndSetConfig(keyValue);
+        if (null != errorMessage) {
+            throw new IllegalArgumentException("config validation failed : " + errorMessage);
+        }
         connector.start();
     }
 
