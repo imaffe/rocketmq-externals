@@ -326,7 +326,8 @@ public class Worker {
         for (String connectorName : connectorConfigs.keySet()) {
             boolean isNewConnector = true;
             for (WorkerConnector workerConnector : workingConnectors) {
-                if (workerConnector.getConnectorName().equals(connectorName)) {
+                if (workerConnector.getConnectorName().equals(connectorName) ||
+                    0 == workerConnector.getKeyValue().getInt(RuntimeConfigDefine.CONNECTOR_STARTED)) {
                     isNewConnector = false;
                     break;
                 }
