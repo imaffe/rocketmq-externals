@@ -80,7 +80,7 @@ public class WorkerConnector {
         return keyValue;
     }
 
-    public void reconfigure(ConnectKeyValue keyValue) {
+    public void reconfigure  (ConnectKeyValue keyValue) throws Exception {
         this.keyValue = keyValue;
         stop();
         start();
