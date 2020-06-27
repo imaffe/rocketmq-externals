@@ -213,8 +213,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
     @Override public void enableConnector(String connectorName) {
         ConnectKeyValue connectorConfig = connectorKeyValueStore.get(connectorName);
-        if ( null != connectorConfig) {
-           connectorConfig.put(RuntimeConfigDefine.CONNECTOR_STARTED, 1);
+        if (null != connectorConfig) {
+            connectorConfig.put(RuntimeConfigDefine.CONNECTOR_STARTED, 1);
         } else {
             log.error("[BUG] the connector to be enabled doesn't exist");
         }
