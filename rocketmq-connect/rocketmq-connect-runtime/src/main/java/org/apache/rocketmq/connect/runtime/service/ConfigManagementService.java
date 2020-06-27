@@ -70,7 +70,17 @@ public interface ConfigManagementService {
      */
     void removeConnectorConfig(String connectorName);
 
+
+
     void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp);
+
+
+    /**
+     * Enable the connector so it should be in running status
+     *
+     * @param connectorName
+     */
+    void enableConnector(String connectorName);
 
     /**
      * Get all Task configs.

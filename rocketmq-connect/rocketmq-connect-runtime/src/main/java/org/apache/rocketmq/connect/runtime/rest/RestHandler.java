@@ -50,16 +50,16 @@ public class RestHandler {
         this.connectController = connectController;
         Javalin app = Javalin.start(connectController.getConnectConfig().getHttpPort());
         app.get("/connectors/stopAll", this::handleStopAllConnector);
-        app.get("/connectors/pauseAll", this::handlePauseAllConnector);
-        app.get("/connectors/resumeAll", this::handleResumeAllConnector);
+//        app.get("/connectors/pauseAll", this::handlePauseAllConnector);
+//        app.get("/connectors/resumeAll", this::handleResumeAllConnector);
         app.get("/connectors/enableAll", this::handleEnableAllConnector);
         app.get("/connectors/disableAll", this::handleDisableAllConnector);
         app.get("/connectors/:connectorName", this::handleCreateConnector);
         app.get("/connectors/:connectorName/config", this::handleQueryConnectorConfig);
         app.get("/connectors/:connectorName/status", this::handleQueryConnectorStatus);
         app.get("/connectors/:connectorName/stop", this::handleStopConnector);
-        app.get("/connectors/:connectorName/pause", this::handlePauseConnector);
-        app.get("/connectors/:connectorName/resume", this::handleResumeConnector);
+//        app.get("/connectors/:connectorName/pause", this::handlePauseConnector);
+//        app.get("/connectors/:connectorName/resume", this::handleResumeConnector);
         app.get("/connectors/:connectorName/enable", this::handleEnableConnector);
         app.get("/connectors/:connectorName/disable", this::handleDisableConnector);
         app.get("/getClusterInfo", this::getClusterInfo);
@@ -202,32 +202,33 @@ public class RestHandler {
         }
     }
 
-    private void handlePauseAllConnector(Context context) {
-
-    }
-
-    private void handleResumeAllConnector(Context context) {
-
-    }
-
     private void handleEnableAllConnector(Context context) {
-
+        try {
+            Map<String, ConnectKeyValue> connectorConfigs = connectController.getConfigManagementService().getConnectorConfigs();
+            for (String connector : connectorConfigs.keySet()) {
+                connectController.getConfigManagementService().enableConnector(connector);
+            }
+            context.result("success");
+        } catch (Exception e) {
+            context.result("failed");
+        }
     }
 
     private void handleDisableAllConnector(Context context) {
 
     }
 
-    private void handlePauseConnector(Context context) {
-
-    }
-
-    private void handleResumeConnector(Context context) {
-
-    }
-
     private void handleEnableConnector(Context context) {
+        String connectorName = context.param("connectorName");
+        try {
+            Map<String, ConnectKeyValue> connectorConfigs = connectController.getConfigManagementService().getConnectorConfigs();
 
+            connectController.getConfigManagementService().enableConnector(connectorName);
+
+            context.result("success");
+        } catch (Exception e) {
+            context.result("failed");
+        }
     }
 
     private void handleDisableConnector(Context context) {

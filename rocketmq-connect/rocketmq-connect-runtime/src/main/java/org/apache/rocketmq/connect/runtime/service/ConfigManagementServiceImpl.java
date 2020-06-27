@@ -211,6 +211,15 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         triggerListener();
     }
 
+    @Override public void enableConnector(String connectorName) {
+        ConnectKeyValue connectorConfig = connectorKeyValueStore.get(connectorName);
+        if ( null != connectorConfig) {
+           connectorConfig.put(RuntimeConfigDefine.CONNECTOR_STARTED, 1);
+        } else {
+            log.error("[BUG] the connector to be enabled doesn't exist");
+        }
+    }
+
     @Override
     public Map<String, List<ConnectKeyValue>> getTaskConfigs() {
         Map<String, List<ConnectKeyValue>> result = new HashMap<>();
