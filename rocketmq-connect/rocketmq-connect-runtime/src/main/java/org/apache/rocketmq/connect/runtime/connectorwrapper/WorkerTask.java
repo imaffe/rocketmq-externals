@@ -43,5 +43,5 @@ public interface WorkerTask extends Runnable {
      */
     public boolean migrateState(WorkerTaskState from, WorkerTaskState to);
 
-    public void migrateToErrorState(WorkerTaskState prev, Throwable t);
+    public void migrateToErrorState(Throwable t);
 }

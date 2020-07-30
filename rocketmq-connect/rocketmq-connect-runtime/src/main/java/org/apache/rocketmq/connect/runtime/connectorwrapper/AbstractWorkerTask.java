@@ -41,6 +41,9 @@ public abstract class AbstractWorkerTask implements WorkerTask {
     protected AtomicReference<WorkerTaskState> state;
 
 
+    protected WorkerTaskErrorSnapshot errorSnapshot;
+
+
     /**
      * Further we cant try to log what caused the error
      */
@@ -103,8 +106,12 @@ public abstract class AbstractWorkerTask implements WorkerTask {
     }
 
     @Override
-    public void migrateToErrorState(WorkerTaskState prev, Throwable t) {
-
+    public void migrateToErrorState(Throwable t) {
+        state.set(WorkerTaskState.ERROR);
+        WorkerTaskErrorSnapshot workerTaskErrorSnapshot = new WorkerTaskErrorSnapshot();
+        workerTaskErrorSnapshot.setPrev(state.get());
+        workerTaskErrorSnapshot.setThrowable(t);
+        errorSnapshot = workerTaskErrorSnapshot;
     }
 
     @Override
@@ -118,7 +125,8 @@ public abstract class AbstractWorkerTask implements WorkerTask {
         StringBuilder sb = new StringBuilder();
         sb.append("connectorName:" + connectorName)
                 .append("\nConfigs:" + JSON.toJSONString(taskConfig))
-                .append("\nState:" + state.get().toString());
+                .append("\nState:" + state.get().toString())
+                .append("\nPrevStateBeforeError:" + (null == errorSnapshot ? " " : errorSnapshot.toString()));
         return sb.toString();
     }
 
@@ -128,6 +136,8 @@ public abstract class AbstractWorkerTask implements WorkerTask {
         obj.put("connectorName", connectorName);
         obj.put("configs", JSON.toJSONString(taskConfig));
         obj.put("state", state.get().toString());
+        obj.put("prevStateBeforeError", null == errorSnapshot ? null : errorSnapshot.getPrev());
+        obj.put("error", null == errorSnapshot ? null : errorSnapshot.getThrowable());
         return obj;
     }
 }

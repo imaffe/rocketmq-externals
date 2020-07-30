@@ -343,7 +343,7 @@ public class Worker {
 
     }
 
-    public void maintainTaskState() throws Exception {
+    public void maintainTaskState()  {
 
         Map<String, List<ConnectKeyValue>> taskConfigs = new HashMap<>();
         synchronized (latestTaskConfigs) {
@@ -368,57 +368,33 @@ public class Worker {
         }
 
         //  STEP 1: try to create new tasks
+        /**
+         * TODO
+         * Here what if we have error when creating a task ? It is not
+         * loaded to the runtime at all, but it should have a state already.
+         * Perhaps we will use taskId (or taskName) as the uniqueId of a task
+         * as the key (like taskName)
+         *
+         * Currently we cannot put the task to any state if the task failed to
+         * load class.
+         */
         for (String connectorName : newTasks.keySet()) {
             for (ConnectKeyValue keyValue : newTasks.get(connectorName)) {
-                String taskClass = keyValue.getString(RuntimeConfigDefine.TASK_CLASS);
-                ClassLoader loader = plugin.getPluginClassLoader(taskClass);
-                final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
-                Class taskClazz;
-                boolean isolationFlag = false;
-                if (loader instanceof PluginClassLoader) {
-                    taskClazz = ((PluginClassLoader) loader).loadClass(taskClass, false);
-                    isolationFlag = true;
+                WorkerTask workerTask = null;
+                try {
+                    workerTask= loadTask(connectorName, keyValue);
+                } catch (MQClientException e){
+                    log.error("Error creating task, failed to create consumer for sink task {}, exception ", workerTask.toString(), e);
+                } catch (ReflectiveOperationException e) {
+                    log.error("Error creating task, class loading failed for sink task {}, exception ", workerTask.toString(), e);
+                }
+
+                if (null != workerTask) {
+                    Future future = taskExecutor.submit(workerTask);
+                    taskToFutureMap.put(workerTask, future);
+                    this.pendingTasks.put(workerTask, System.currentTimeMillis());
                 } else {
-                    taskClazz = Class.forName(taskClass);
-                }
-                final Task task = (Task) taskClazz.getDeclaredConstructor().newInstance();
-                final String converterClazzName = keyValue.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER);
-                Converter recordConverter = null;
-                if (StringUtils.isNotEmpty(converterClazzName)) {
-                    Class converterClazz = Class.forName(converterClazzName);
-                    recordConverter = (Converter) converterClazz.newInstance();
-                }
-                if (isolationFlag) {
-                    Plugin.compareAndSwapLoaders(loader);
-                }
-                if (task instanceof SourceTask) {
-                    checkRmqProducerState();
-                    WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
-                        (SourceTask) task, keyValue,
-                        new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
-                    Plugin.compareAndSwapLoaders(currentThreadLoader);
-
-                    Future future = taskExecutor.submit(workerSourceTask);
-                    taskToFutureMap.put(workerSourceTask, future);
-                    this.pendingTasks.put(workerSourceTask, System.currentTimeMillis());
-                } else if (task instanceof SinkTask) {
-                    DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
-                    consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-                    consumer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
-                    consumer.setConsumerGroup(ConnectUtil.createGroupName(connectConfig.getRmqConsumerGroup()));
-                    consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
-                    consumer.setBrokerSuspendMaxTimeMillis(connectConfig.getBrokerSuspendMaxTimeMillis());
-                    consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
-                    consumer.start();
-
-                    WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
-                        (SinkTask) task, keyValue,
-                        new PositionStorageReaderImpl(offsetManagementService),
-                        recordConverter, consumer);
-                    Plugin.compareAndSwapLoaders(currentThreadLoader);
-                    Future future = taskExecutor.submit(workerSinkTask);
-                    taskToFutureMap.put(workerSinkTask, future);
-                    this.pendingTasks.put(workerSinkTask, System.currentTimeMillis());
+                    // TODO put this task and the cause to error.
                 }
             }
         }
@@ -591,12 +567,8 @@ public class Worker {
 
             while (!this.isStopped()) {
                 this.waitForRunning(1000);
-                try {
-                    Worker.this.maintainConnectorState();
-                    Worker.this.maintainTaskState();
-                } catch (Exception e) {
-                    log.error("RebalanceImpl#StateMachineService start connector or task failed", e);
-                }
+                Worker.this.maintainConnectorState();
+                Worker.this.maintainTaskState();
             }
 
             log.info(this.getServiceName() + " service end");
@@ -607,4 +579,54 @@ public class Worker {
             return StateMachineService.class.getSimpleName();
         }
     }
+
+    private WorkerTask loadTask(String connectorName, ConnectKeyValue keyValue) throws ReflectiveOperationException, MQClientException {
+        String taskClass = keyValue.getString(RuntimeConfigDefine.TASK_CLASS);
+        ClassLoader loader = plugin.getPluginClassLoader(taskClass);
+        final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
+        Class taskClazz;
+        boolean isolationFlag = false;
+        if (loader instanceof PluginClassLoader) {
+            taskClazz = ((PluginClassLoader) loader).loadClass(taskClass, false);
+            isolationFlag = true;
+        } else {
+            taskClazz = Class.forName(taskClass);
+        }
+        final Task task = (Task) taskClazz.getDeclaredConstructor().newInstance();
+        final String converterClazzName = keyValue.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER);
+        Converter recordConverter = null;
+        if (StringUtils.isNotEmpty(converterClazzName)) {
+            Class converterClazz = Class.forName(converterClazzName);
+            recordConverter = (Converter) converterClazz.newInstance();
+        }
+        if (isolationFlag) {
+            Plugin.compareAndSwapLoaders(loader);
+        }
+        if (task instanceof SourceTask) {
+            checkRmqProducerState();
+            WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
+                    (SourceTask) task, keyValue,
+                    new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
+            Plugin.compareAndSwapLoaders(currentThreadLoader);
+
+            return workerSourceTask;
+        } else {
+            DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
+            consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
+            consumer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
+            consumer.setConsumerGroup(ConnectUtil.createGroupName(connectConfig.getRmqConsumerGroup()));
+            consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
+            consumer.setBrokerSuspendMaxTimeMillis(connectConfig.getBrokerSuspendMaxTimeMillis());
+            consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
+            consumer.start();
+
+            WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
+                    (SinkTask) task, keyValue,
+                    new PositionStorageReaderImpl(offsetManagementService),
+                    recordConverter, consumer);
+            Plugin.compareAndSwapLoaders(currentThreadLoader);
+            return workerSinkTask;
+        }
+    }
+
 }

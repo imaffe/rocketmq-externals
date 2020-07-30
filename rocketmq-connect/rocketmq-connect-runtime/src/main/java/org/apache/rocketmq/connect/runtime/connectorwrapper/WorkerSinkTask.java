@@ -237,8 +237,7 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
                 log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
             } else {
                 log.error("Lack of sink comsume topicNames config");
-                // TODO need to carefully define a Exception Mechanism here
-                migrateToErrorState(WorkerTaskState.ERROR, new Exception());
+                migrateToErrorState(new IllegalArgumentException("Lack of sink comsume topicNames config"));
                 return;
             }
 
@@ -256,6 +255,7 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
             migrateState(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
 
+
             while (WorkerTaskState.RUNNING == state.get()) {
                 // this method can block up to 3 minutes long
                 pullMessageFromQueues();
@@ -265,10 +265,14 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
             migrateState(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
             log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
 
-        } catch (Exception e) {
-            log.error("Run task failed.", e);
-            // TODO we don't know the prev state here
-            migrateToErrorState(WorkerTaskState.ERROR, e);
+        } catch (MQClientException | RemotingException | MQBrokerException e) {
+            log.error("Run task failed with rocketmq consumer exception", e);
+            migrateToErrorState(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (RuntimeException e) {
+            log.error("Run task failed with runtime exception", e);
+            migrateToErrorState(e);
         }
     }
 
