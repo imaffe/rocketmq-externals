@@ -217,7 +217,7 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
                     return taskConfig;
                 }
             });
-
+            migrateState(WorkerTaskState.NEW, WorkerTaskState.PENDING);
             String topicNamesStr = taskConfig.getString(QUEUENAMES_CONFIG);
 
 
@@ -233,8 +233,8 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
                 }
                 log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
             } else {
-                log.error("Lack of sink comsume topicNames config");
-                migrateToErrorState(new IllegalArgumentException("Lack of sink comsume topicNames config"));
+                log.error("Lack of sink consume topicNames config");
+                migrateToErrorState(new IllegalArgumentException("Lack of sink consume topicNames config"));
                 return;
             }
 
