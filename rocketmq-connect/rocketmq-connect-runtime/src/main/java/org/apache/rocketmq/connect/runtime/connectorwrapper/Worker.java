@@ -382,8 +382,8 @@ public class Worker {
             for (ConnectKeyValue keyValue : newTasks.get(connectorName)) {
                 WorkerTask workerTask = null;
                 try {
-                    workerTask= loadTask(connectorName, keyValue);
-                } catch (MQClientException e){
+                    workerTask = loadTask(connectorName, keyValue);
+                } catch (MQClientException e) {
                     log.error("Error creating task, failed to create consumer for sink task {}, exception ", workerTask.toString(), e);
                 } catch (ReflectiveOperationException e) {
                     log.error("Error creating task, class loading failed for sink task {}, exception ", workerTask.toString(), e);

@@ -49,13 +49,10 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
 import org.apache.rocketmq.remoting.exception.RemotingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A wrapper of {@link SinkTask} for runtime.
