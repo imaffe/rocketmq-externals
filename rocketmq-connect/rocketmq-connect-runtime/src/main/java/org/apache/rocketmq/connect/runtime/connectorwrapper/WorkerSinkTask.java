@@ -229,7 +229,6 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
                         final long offset = consumer.searchOffset(messageQueue, TIMEOUT);
                         messageQueuesOffsetMap.put(messageQueue, offset);
                     }
-                    messageQueues.addAll(messageQueues);
                 }
                 log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
             } else {

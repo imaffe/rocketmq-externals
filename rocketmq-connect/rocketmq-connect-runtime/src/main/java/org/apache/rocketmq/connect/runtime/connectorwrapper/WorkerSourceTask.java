@@ -49,23 +49,13 @@ import org.apache.rocketmq.remoting.exception.RemotingException;
 /**
  * A wrapper of {@link SourceTask} for runtime.
  */
-public class WorkerSourceTask extends  AbstractWorkerTask implements WorkerTask {
+public class WorkerSourceTask extends AbstractWorkerTask implements WorkerTask {
 
-
-    /**
-     * Connector name of current task.
-     */
-    private String connectorName;
 
     /**
      * The implements of the source task.
      */
     private SourceTask sourceTask;
-
-    /**
-     * The configs of current source task.
-     */
-    private ConnectKeyValue taskConfig;
 
     /**
      * Used to read the position of source data source.
