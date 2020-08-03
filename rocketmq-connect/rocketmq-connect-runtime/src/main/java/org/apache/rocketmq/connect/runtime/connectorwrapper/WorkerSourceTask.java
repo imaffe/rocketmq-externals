@@ -134,7 +134,7 @@ public class WorkerSourceTask extends  AbstractWorkerTask implements WorkerTask 
                     }
                 } catch (Exception e) {
                     log.warn("Source task runtime exception", e);
-                    migrateToErrorState(WorkerTaskState.ERROR, new Exception());
+                    migrateToErrorState(new Exception());
                 }
             }
             sourceTask.stop();
@@ -142,7 +142,7 @@ public class WorkerSourceTask extends  AbstractWorkerTask implements WorkerTask 
             log.info("Source task stop, config:{}", JSON.toJSONString(taskConfig));
         } catch (Exception e) {
             log.error("Run task failed.", e);
-            migrateToErrorState(WorkerTaskState.ERROR, new Exception());
+            migrateToErrorState(new Exception());
         }
     }
 
