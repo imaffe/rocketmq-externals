@@ -513,8 +513,7 @@ public class Worker {
             } finally {
                 future.cancel(true);
                 workerTask.cleanup();
-                taskIdToTaskRunnableMap.remove(taskId);
-                taskIdToTaskRunnableMap.remove(taskId);
+                taskIdToFutureMap.remove(taskId);
                 errorTasks.remove(taskId);
                 cleanedErrorTasks.add(taskId);
 
@@ -550,7 +549,6 @@ public class Worker {
             finally {
                 future.cancel(true);
                 taskIdToFutureMap.remove(taskId);
-                taskIdToTaskRunnableMap.remove(taskId);
                 stoppedTasks.remove(taskId);
                 cleanedStoppedTasks.add(taskId);
             }
