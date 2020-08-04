@@ -17,6 +17,9 @@
 package org.apache.rocketmq.connect.runtime.connectorwrapper;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 
+import java.nio.ByteBuffer;
+import java.util.Map;
+
 /**
  * Should we use callable here ?
  */
@@ -35,6 +38,7 @@ public interface WorkerTask extends Runnable {
     public Object getJsonObject();
 
     public void timeout();
+
 
     /**
      * Define legal state migration schema here in this method.

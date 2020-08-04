@@ -78,12 +78,14 @@ public class WorkerSourceTask extends AbstractWorkerTask implements WorkerTask {
     private Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
 
     public WorkerSourceTask(String connectorName,
+        String uniqueTaskId,
         SourceTask sourceTask,
         ConnectKeyValue taskConfig,
         PositionStorageReader positionStorageReader,
         Converter recordConverter,
         DefaultMQProducer producer) {
         this.connectorName = connectorName;
+        this.uniqueTaskId = uniqueTaskId;
         this.sourceTask = sourceTask;
         this.taskConfig = taskConfig;
         this.positionStorageReader = positionStorageReader;

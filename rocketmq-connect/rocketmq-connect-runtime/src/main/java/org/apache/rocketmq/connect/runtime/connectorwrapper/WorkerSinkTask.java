@@ -103,12 +103,14 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
     private long nextCommitTime = 0;
 
     public WorkerSinkTask(String connectorName,
+        String uniqueTaskId,
         SinkTask sinkTask,
         ConnectKeyValue taskConfig,
         PositionStorageReader offsetStorageReader,
         Converter recordConverter,
         DefaultMQPullConsumer consumer) {
         this.connectorName = connectorName;
+        this.uniqueTaskId = uniqueTaskId;
         this.sinkTask = sinkTask;
         this.taskConfig = taskConfig;
         this.consumer = consumer;
@@ -315,8 +317,14 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
         }
     }
 
+
+    /**
+     * Will iterator.remove() not work here TODO
+     * @param messageQueue
+     * @param messages
+     */
     private void removePauseQueueMessage(MessageQueue messageQueue, List<MessageExt> messages) {
-        if (null != messageQueuesStateMap.get(messageQueue)) {
+        if (null != messageQueuesStateMap.get(messageQueue) && QueueState.PAUSE == messageQueuesStateMap.get(messageQueue)) {
             final Iterator<MessageExt> iterator = messages.iterator();
             while (iterator.hasNext()) {
                 final MessageExt message = iterator.next();
@@ -447,5 +455,4 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
     public Map<ByteBuffer, ByteBuffer> getOffsetData() {
         return offsetData;
     }
-
 }

@@ -73,13 +73,11 @@ public class TaskPositionCommitService extends ServiceThread {
     public void commitTaskPosition() {
         Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
         Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
-        for (Runnable task : worker.getWorkingTasks()) {
-            if (task instanceof WorkerSourceTask) {
-                positionData.putAll(((WorkerSourceTask) task).getPositionData());
-                positionManagementService.putPosition(positionData);
-            } else if (task instanceof WorkerSinkTask) {
-                offsetData.putAll(((WorkerSinkTask) task).getOffsetData());
-                offsetManagementService.putPosition(offsetData);
+        for (String taskId : worker.getWorkingTasks()) {
+            if (worker.isSourceTask(taskId)) {
+                positionManagementService.putPosition(worker.getPositionOrOffsetData(taskId));
+            } else  {
+                offsetManagementService.putPosition(worker.getPositionOrOffsetData(taskId));
             }
         }
     }
