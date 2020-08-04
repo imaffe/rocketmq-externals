@@ -17,8 +17,6 @@
 package org.apache.rocketmq.connect.runtime.connectorwrapper;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 
-import java.nio.ByteBuffer;
-import java.util.Map;
 
 /**
  * Should we use callable here ?

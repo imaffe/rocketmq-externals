@@ -189,7 +189,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             newKeyValue.put(RuntimeConfigDefine.UNIQUE_TASK_ID, generateUniqueTaskId(connectorName, currentTimestamp, count));
             newKeyValue.put(RuntimeConfigDefine.CONNECTOR_NAME, connectorName);
             converterdConfigs.add(newKeyValue);
-            count ++;
+            count++;
         }
         putTaskConfigs(connectorName, converterdConfigs);
         sendSynchronizeConfig();

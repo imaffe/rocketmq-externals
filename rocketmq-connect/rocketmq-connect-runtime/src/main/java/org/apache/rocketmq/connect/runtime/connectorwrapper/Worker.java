@@ -25,7 +25,6 @@ import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.source.SourceTask;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -435,7 +434,7 @@ public class Worker {
                 }
             } else {
                 log.error("[BUG] Illegal State in when checking pending tasks, {} is in {} state",
-                workerTask.getConnectorName(), state.toString());
+                        workerTask.getConnectorName(), state.toString());
             }
         }
 
@@ -662,11 +661,7 @@ public class Worker {
 
     public boolean isSourceTask(String taskId) {
         WorkerTask workerTask = (WorkerTask) taskIdToTaskRunnableMap.get(taskId);
-        if (workerTask instanceof  WorkerSourceTask) {
-            return true;
-        } else {
-            return false;
-        }
+        return workerTask instanceof WorkerSourceTask;
     }
 
     public Map<ByteBuffer, ByteBuffer> getPositionOrOffsetData(String taskId) {
