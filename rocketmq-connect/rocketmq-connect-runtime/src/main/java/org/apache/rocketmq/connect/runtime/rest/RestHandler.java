@@ -236,7 +236,7 @@ public class RestHandler {
     private Set<Object> convertWorkerTaskToString(Set<String> taskIds) {
         Set<Object> result = new HashSet<>();
         for (String taskId : taskIds) {
-            result.add(connectController.getWorker().getTaskJsonObject(taskId);
+            result.add(connectController.getWorker().getTaskJsonObject(taskId));
         }
         return result;
     }
