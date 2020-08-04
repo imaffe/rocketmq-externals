@@ -144,7 +144,7 @@ public class Worker {
     // for MQProducer
     private volatile boolean producerStarted = false;
 
-    private StateMachineService stateMachineService = new StateMachineService();
+    private StateMachineService stateMachineService;
 
     public Worker(ConnectConfig connectConfig,
                   PositionManagementService positionManagementService, PositionManagementService offsetManagementService,
@@ -166,6 +166,7 @@ public class Worker {
         this.producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
         this.producer.setMaxMessageSize(RuntimeConfigDefine.MAX_MESSAGE_SIZE);
         this.producer.setLanguage(LanguageCode.JAVA);
+        this.stateMachineService = new StateMachineService();
     }
 
     public void start() {
@@ -356,7 +357,7 @@ public class Worker {
         // Get New Tasks
         Set<String> newTasks = new HashSet<>();
 
-        for (String taskId : newConnectorNameToTaskIdsMap.keySet()) {
+        for (String taskId : newTaskIdToConfigMap.keySet()) {
             if (!taskIdToConfigMap.containsKey(taskId)) {
                 newTasks.add(taskId);
             }
@@ -367,7 +368,7 @@ public class Worker {
         Set<String> toDeleteTasks = new HashSet<>();
 
         for (String taskId : taskIdToConfigMap.keySet()) {
-            if (!newConnectorNameToTaskIdsMap.containsKey(taskId)) {
+            if (!newTaskIdToConfigMap.containsKey(taskId)) {
                 toDeleteTasks.add(taskId);
             }
         }
@@ -562,10 +563,14 @@ public class Worker {
         public void run() {
             log.info(this.getServiceName() + " service started");
 
-            while (!this.isStopped()) {
-                this.waitForRunning(1000);
-                Worker.this.maintainConnectorState();
-                Worker.this.maintainTaskState();
+            try {
+                while (!this.isStopped()) {
+                    this.waitForRunning(1000);
+                    Worker.this.maintainConnectorState();
+                    Worker.this.maintainTaskState();
+                }
+            } catch (RuntimeException e) {
+                log.error("StateMachineService got runtime exception", e);
             }
 
             log.info(this.getServiceName() + " service end");
